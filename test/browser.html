@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"> 
+    <head>
+        <title>image-gallery Demo</title>
+        <link id="animate.css" href="../node_modules/animate.css/animate.css" rel="stylesheet">
+        <script src="/progressbar.js"></script>
+        <script type="importmap"> { "imports": {
+            "zoomable-timeline": "../src/index.mjs",
+            "browser-or-node": "../node_modules/browser-or-node/src/index.js",
+            "@environment-safe/elements": "../node_modules/@environment-safe/elements/src/index.mjs"
+        } }</script>
+        <style>
+            body{
+                margin: 0px;
+                padding: 0px;
+            }
+            #gallery{
+                position: absolute;
+                display: block;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                background-color: green;
+                
+            }
+            #gallery img{
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="module">
+            import { GalleryImage, ImageGallery } from '../src/index.mjs';
+        </script>
+        <image-gallery id="gallery">
+            <gallery-image source="/test/images/1.jpg"></gallery-image>
+            <gallery-image source="/test/images/2.jpg"></gallery-image>
+            <gallery-image source="/test/images/3.jpg"></gallery-image>
+        </image-gallery>
+        <script>
+            const data = {
+                "/test/images/1.jpg":"foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo ",
+                "/test/images/2.jpg":"bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar ",
+                "/test/images/3.jpg":"baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz baz "
+            }
+            document.getElementsByTagName('body')[0].onload = ()=>{
+                console.log('LOADED');
+                const gallery = document.getElementById('gallery');
+                setTimeout(()=>{
+                    gallery.play(5000);
+                    setTimeout(()=>{
+                        gallery.pause();
+                    }, 15000);
+                }, 2000);
+                gallery.addEventListener('image-changed', (e)=>{
+                    console.log('E', e.detail.img);
+                });
+                gallery.addEventListener('mouseover', (e)=>{
+                    gallery.pause();
+                    console.log('E', e.detail.img);
+                })
+                gallery.addEventListener('mouseout', (e)=>{
+                    gallery.play(5000);
+                })
+            };
+        </script>
+    </body>
+</html>

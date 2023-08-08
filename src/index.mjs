@@ -11,3 +11,7 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
  * A JSON object
  * @typedef { object } JSON
  */
+
+import { GalleryImage } from './gallery-image.mjs';
+import { ImageGallery } from './image-gallery.mjs';
+export { GalleryImage, ImageGallery };
