@@ -1,5 +1,8 @@
 /* global ProgressBar:false*/
 import { HTMLElement, customElements } from '@environment-safe/elements';
+//import { Canvas } from '@environment-safe/canvas';
+import { Transition } from './transition.mjs';
+
 
 export class ImageGallery extends HTMLElement {
     constructor() {
@@ -50,6 +53,7 @@ export class ImageGallery extends HTMLElement {
         this._progress.stop(); 
         this.pause();
         if(this._progress){
+            this._progress.stop(); 
             this._progress.set(0);
             this._progress.animate(1.0);
         }
@@ -59,9 +63,10 @@ export class ImageGallery extends HTMLElement {
         this._intervalKey = setInterval(this._playFn, interval);
     }
     
+    //TODO: pause vs stop
     pause(){
         clearInterval(this._intervalKey);
-        this._progress.stop(); 
+        if(this._progress) this._progress.stop(); 
     }
     
     next(){
@@ -126,43 +131,51 @@ export class ImageGallery extends HTMLElement {
     async transition(imgIn, imgOut, transition){
         return new Promise((resolve, reject)=>{
             try{
-                const inTransition = 'fadeIn';
-                const outTransition = 'fadeOut';
-                let inDone = false;
-                let outDone = false;
-                if(imgIn){
-                    const inEndFn = ()=>{
-                        imgIn.removeEventListener('animationend', inEndFn);
-                        imgIn.classList.remove(`animate__${'animated'}`);
-                        imgIn.classList.remove(`animate__${inTransition}`);
-                        imgIn.classList.remove(`animate__${'faster'}`);
+                if(!this.isWebGL){
+                    const inTransition = 'fadeIn';
+                    const outTransition = 'fadeOut';
+                    let inDone = false;
+                    let outDone = false;
+                    if(imgIn){
+                        const inEndFn = ()=>{
+                            imgIn.removeEventListener('animationend', inEndFn);
+                            imgIn.classList.remove(`animate__${'animated'}`);
+                            imgIn.classList.remove(`animate__${inTransition}`);
+                            imgIn.classList.remove(`animate__${'faster'}`);
+                            inDone = true;
+                            if(inDone && outDone)resolve();
+                        };
+                        imgIn.addEventListener('animationend', inEndFn, false);
+                        imgIn.classList.add(`animate__${'animated'}`);
+                        imgIn.classList.add(`animate__${inTransition}`);
+                        imgIn.classList.add(`animate__${'faster'}`);
+                    }else{
                         inDone = true;
-                        if(inDone && outDone)resolve();
-                    };
-                    imgIn.addEventListener('animationend', inEndFn, false);
-                    imgIn.classList.add(`animate__${'animated'}`);
-                    imgIn.classList.add(`animate__${inTransition}`);
-                    imgIn.classList.add(`animate__${'faster'}`);
-                }else{
-                    inDone = true;
-                }
-                if(imgOut){
-                    const outEndFn = ()=>{
-                        imgOut.removeEventListener('animationend', outEndFn);
-                        imgOut.classList.remove(`animate__${'animated'}`);
-                        imgOut.classList.remove(`animate__${outTransition}`);
-                        imgOut.classList.remove(`animate__${'faster'}`);
+                    }
+                    if(imgOut){
+                        const outEndFn = ()=>{
+                            imgOut.removeEventListener('animationend', outEndFn);
+                            imgOut.classList.remove(`animate__${'animated'}`);
+                            imgOut.classList.remove(`animate__${outTransition}`);
+                            imgOut.classList.remove(`animate__${'faster'}`);
+                            outDone = true;
+                            if(inDone && outDone)resolve();
+                        };
+                        imgOut.addEventListener('animationend', outEndFn, false);
+                        imgOut.classList.add(`animate__${'animated'}`);
+                        imgOut.classList.add(`animate__${outTransition}`);
+                        imgOut.classList.add(`animate__${'faster'}`);
+                    }else{
                         outDone = true;
-                        if(inDone && outDone)resolve();
-                    };
-                    imgOut.addEventListener('animationend', outEndFn, false);
-                    imgOut.classList.add(`animate__${'animated'}`);
-                    imgOut.classList.add(`animate__${outTransition}`);
-                    imgOut.classList.add(`animate__${'faster'}`);
+                    }
                 }else{
-                    outDone = true;
+                    new Transition({
+                        element: this._container,
+                        in: imgIn.getAttributes('src'),
+                        out: imgOut.getAttributes('src')
+                    });
                 }
-            }catch(ex){ reject(ex); }
+            }catch(ex){ console.log(ex); reject(ex); }
         });
     }
     
@@ -180,38 +193,67 @@ export class ImageGallery extends HTMLElement {
         }
         this._container.style.width = this.offsetWidth+'px';
         this._container.style.height = this.offsetHeight+'px';
-        this._imgs = [];
-        this._images.forEach((image)=>{
-            const meta = typeof image === 'string'?{url:image}:image;
-            const img = document.createElement('div');
-            img.setAttribute('style', `
-              position:absolute;
-              background: url(${meta.url}) no-repeat center center fixed; 
-              -webkit-background-size: cover;
-              -moz-background-size: cover;
-              -o-background-size: cover;
-              background-size: cover;
-              height: 100%;
-              width: 100%;
-            `);
-            this._imgs.push(img);
-            img.style.visibility = 'hidden';
-            this._container.appendChild(img);
-        });
+        if(!this.isWebGL){
+            this._imgs = [];
+            this._images.forEach((image)=>{
+                const meta = typeof image === 'string'?{url:image}:image;
+                const imgContainer = document.createElement('div');
+                imgContainer.setAttribute('style', `
+                  position: absolute;
+                  background-color: blue;
+                  height: 100%;
+                    width: 100%;
+                `);
+                const imgContainer2 = document.createElement('div');
+                imgContainer2.setAttribute('style', `
+                  position: static;
+                  background-color: yellow;
+                  height: 100%;
+                    width: 100%;
+                `);
+                const img = document.createElement('div');
+                img.setAttribute('style', `
+                  position:static;
+                  background-color: red;
+                  background: url(${meta.url}) no-repeat center center local; 
+                  -webkit-background-size: cover;
+                  -moz-background-size: cover;
+                  -o-background-size: cover;
+                  background-size: cover;
+                  height: 100%;
+                  width: 100%;
+                `);
+                try{
+                    this._imgs.push(imgContainer);
+                    imgContainer.style.visibility = 'hidden';
+                    imgContainer.appendChild(imgContainer2);
+                    imgContainer2.appendChild(img);
+                    this._container.appendChild(imgContainer);
+                }catch(ex){
+                    console.log('!!!', ex);
+                }
+            });
+        }else{
+            //TODO
+        }
     }
     
     display(){
         if(this._progress){
             this._progress.set(0);
         }
-        const outImg = this._selectedImg;
-        this._selectedImg = this._imgs[this._selected];
-        this._selectedImg.style.visibility = 'visible';
-        this.transition(this._selectedImg, outImg, 'flip').then(()=>{
-            outImg.style.visibility = 'hidden';
-        }).catch((ex)=>{
-            throw ex;
-        });
+        if(!this.isWebGL){
+            const outImg = this._selectedImg;
+            this._selectedImg = this._imgs[this._selected];
+            this._selectedImg.style.visibility = 'visible';
+            this.transition(this._selectedImg, outImg, 'flip').then(()=>{
+                outImg.style.visibility = 'hidden';
+            }).catch((ex)=>{
+                throw ex;
+            });
+        }else{
+            //this._canvas.getCon
+        }
     }
 
 }

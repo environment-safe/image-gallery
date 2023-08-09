@@ -96,9 +96,10 @@
         "prepare": "husky install"
     },
     "dependencies": {
+        "@environment-safe/canvas": "^3.0.1",
         "@environment-safe/elements": "^0.0.2",
         "animate.css": "^4.1.1",
         "browser-or-node": "^2.1.1",
-        "progressbar.js": "^1.1.0"
+        "three": "^0.155.0"
     }
 }

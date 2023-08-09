@@ -146,7 +146,6 @@ var Path = function Path(path, opts) {
     var element;
     if (utils.isString(path)) {
         element = (opts.context || document).querySelector(path);
-        console.log('EL', element, opts.context.querySelector(path), opts.context)
     } else {
         element = path;
     }

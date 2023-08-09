@@ -26,6 +26,19 @@
             #gallery img{
                 margin: auto;
             }
+            #thumb{
+                position: absolute;
+                display: block;
+                top: 50px;
+                right: 50px;
+                width: 200px;
+                height: 150px;
+                background-color: green;
+                
+            }
+            #thumb img{
+                margin: auto;
+            }
         </style>
     </head>
     <body>
@@ -36,6 +49,10 @@
             <gallery-image source="/test/images/1.jpg"></gallery-image>
             <gallery-image source="/test/images/2.jpg"></gallery-image>
             <gallery-image source="/test/images/3.jpg"></gallery-image>
+        </image-gallery>
+        <image-gallery id="thumb">
+            <gallery-image source="/test/images/1.jpg"></gallery-image>
+            <gallery-image source="/test/images/2.jpg"></gallery-image>
         </image-gallery>
         <script>
             const data = {
@@ -53,15 +70,17 @@
                     }, 15000);
                 }, 2000);
                 gallery.addEventListener('image-changed', (e)=>{
-                    console.log('E', e.detail.img);
+                    console.log('C', e.detail.img);
                 });
                 gallery.addEventListener('mouseover', (e)=>{
                     gallery.pause();
-                    console.log('E', e.detail.img);
+                    console.log('IN');
                 })
                 gallery.addEventListener('mouseout', (e)=>{
                     gallery.play(5000);
-                })
+                    console.log('OUT');
+                });
+                document.getElementById('thumb').play(3000);
             };
         </script>
     </body>
